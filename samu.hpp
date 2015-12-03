@@ -103,6 +103,10 @@ public:
 
     std::unique_lock<std::mutex> lk ( mutex_ );
     cv_.notify_all();
+    
+#ifdef AUDIO_RESPONSE
+    this->sc.setSynced(false);
+#endif
   }
 
   ~Samu()

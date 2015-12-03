@@ -56,6 +56,8 @@
 
 #include <ncurses.h>
 
+#include "speak.hpp"
+
 
 #ifdef NETCHAT
 
@@ -67,6 +69,8 @@ void Samu::NetworkCaregiverShell ( void )
   std::string cmd_prefix = "cmd";
 
   int sleep {0};
+  
+  
 
   if ( sleep_ )
     sleep = sleep_after_ + 1;
@@ -201,6 +205,7 @@ void Samu::FamilyCaregiverShell ( void )
   std::string cmd_prefix = "cmd";
 
   int sleep {0};
+  
 
   if ( sleep_ )
     sleep = sleep_after_ + 1;
@@ -228,6 +233,7 @@ void Samu::FamilyCaregiverShell ( void )
             }
           else if ( state == TERMINAL )
             {
+
               std::cerr << sleep << " +++" << std::flush;
 
               int sec = ( sleep * read_usec_ ) / ( 1000*1000 );

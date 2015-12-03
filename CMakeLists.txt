@@ -67,7 +67,7 @@ project(SAMU)
 
 # Amminadab
 add_definitions(-DLZW_TREE)
-#add_definitions(-DNETCHAT)
+add_definitions(-DNETCHAT)
 
   
 # Ram
@@ -98,7 +98,10 @@ add_definitions(-DQNN_DEBUG)
 #add_definitions(-DRND_DEBUG)
 #add_definitions(-DNN_DEBUG)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -O3 -lm")
+# Turn on audio responses
+add_definitions(-DAUDIO_RESPONSE)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -O3 -lm -lespeak")
 
 if(${CUDA_LAYERS})
   add_definitions(-DCUDA_PRCPS)

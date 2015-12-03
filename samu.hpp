@@ -80,12 +80,18 @@
 #include <cctype>
 #include <cmath>
 
+#ifdef AUDIO_RESPONSE
+#include "speak.hpp"
+#endif
+
 enum SamuState {SLEEP, TERMINAL, NETWORK};
 
 class Samu
 {
 public:
-
+  
+  
+  
   Samu ( const char* name, const char* soul ) : name ( name ), soul ( soul )
   {
 #ifndef Q_LOOKUP_TABLE
@@ -211,11 +217,22 @@ public:
           clear_vi();
 
         old_talk_id = id;
-
-        vi << nlp.sentence2triplets ( sentence.c_str() );
+	
+ 	vi << nlp.sentence2triplets(sentence.c_str());
+	
+#ifdef AUDIO_RESPONSE
+	this->setAudioResponse(this->vi.getAudioResponse());
+	
+	std::string aud_resp = this->getAudioResponse();
+	
+	this->sc.setText(aud_resp);
+	
+	this->sc.playAudio();
+	
+#endif
 
         msg_mutex.unlock();
-
+	
       }
     else
       {
@@ -233,15 +250,18 @@ public:
           clear_vi();
 
         old_talk_id = id;
-
+      
         vi << triplets;
+	
+// 	SPOTriplet response = ( vi << triplets );
 
         msg_mutex.unlock();
-
+	
       }
     else
       {
         throw "My attention diverted elsewhere.";
+	
       }
 
   }
@@ -344,8 +364,26 @@ public:
   {
     vi.debug_tree ( );
   }
+  
+#ifdef AUDIO_RESPONSE
+    void setAudioResponse(std::string new_response){
+      audio_response = new_response;
+    }
+    
+    std::string getAudioResponse() {
+      return audio_response;
+    }
+#endif
 
 private:
+  
+#ifdef AUDIO_RESPONSE
+  std::string audio_response;
+  
+  SpeakController sc;
+#endif
+  
+  
 
   class VisualImagery
   {
@@ -375,12 +413,22 @@ private:
 //#endif
 
 
+
+
+//----------------------------------------------------------------------------------------------
+
     void operator<< ( std::vector<SPOTriplet> triplets )
     {
 
-      if ( !triplets.size() )
+      if ( !triplets.size() ) {
+#ifdef AUDIO_RESPONSE
+	this->setAudioResponse("Sorry, that sentence makes no sense for me.");
+	disp.log(this->getAudioResponse());
+#else
+	disp.log("Sorry, that sentence makes no sense for me.");
+#endif
         return;
-
+      }
       for ( auto triplet : triplets )
         {
           if ( program.size() >= stmt_max )
@@ -622,7 +670,14 @@ private:
       SPOTriplet response = ql ( triplets[0], prg, img_input );
 
       std::stringstream resp;
-
+      
+#ifdef AUDIO_RESPONSE
+      std::stringstream audioresp;
+      
+      audioresp << response;
+      audioresp << ".";
+      std::string audioresp_s = audioresp.str();
+#endif
       resp << samu.name
 #ifdef QNN_DEBUG
            << "@"
@@ -639,6 +694,9 @@ private:
       std::string r = resp.str();
 
       std::cerr << r << std::endl;
+#ifdef AUDIO_RESPONSE
+      this->setAudioResponse(audioresp_s);
+#endif
 
 #ifdef NETCHAT
       std::string nr = response.s + ' ' + response.p + ' ' + response.o;
@@ -674,8 +732,11 @@ private:
 #endif
 
 #endif
+
+
     }
 
+    
     double reward ( void )
     {
       return ql.reward();
@@ -735,6 +796,16 @@ private:
     {
       return ql.get_min_reward();
     }
+    
+#ifdef AUDIO_RESPONSE
+    void setAudioResponse(std::string new_response){
+      audio_response = new_response;
+    }
+    
+    std::string getAudioResponse() {
+      return audio_response;
+    }
+#endif
 
   private:
 
@@ -748,9 +819,11 @@ private:
 #endif
     int stmt_counter {0};
     static const int stmt_max = 10;
+#ifdef AUDIO_RESPONSE
+  std::string audio_response;
+#endif
 
   };
-
   std::string soul;
 
 #ifdef DISP_CURSES
@@ -784,6 +857,8 @@ private:
   int old_talk_id {-std::numeric_limits<int>::max() };
 
   std::string training_file;
+  
+  
 };
 
 #endif

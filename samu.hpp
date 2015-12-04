@@ -429,7 +429,13 @@ private:
 	this->setAudioResponse("Sorry, that sentence makes no sense for me.");
 	disp.log(this->getAudioResponse());
 #else
+	
+#ifdef DISP_CURSES
 	disp.log("Sorry, that sentence makes no sense for me.");
+#else
+	std::cerr << "Sorry, that sentence makes no sense for me." << std::endl;
+#endif
+	
 #endif
         return;
       }
